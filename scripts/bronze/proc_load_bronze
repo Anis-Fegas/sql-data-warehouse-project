@@ -1,1 +1,92 @@
 
+/*
+===============================================================================
+PURPOSE: Load raw data from CSV files into the Bronze layer of the Data Warehouse.
+
+WHAT THIS SCRIPT DOES:
+1. Truncates (empties) all 6 Bronze tables before loading fresh data.
+2. Loads CSV data from the source_crm and source_erp folders into each table.
+3. Tracks the total time taken for the entire load process.
+
+TABLES LOADED:
+- bronze.crm_cust_info
+- bronze.crm_prd_info
+- bronze.crm_sales_details
+- bronze.erp_cust_az12
+- bronze.erp_loc_a101
+- bronze.erp_px_cat_g1v2
+
+SOURCE FILES:
+- datasets/source_crm/cust_info.csv
+- datasets/source_crm/prd_info.csv
+- datasets/source_crm/sales_details.csv
+- datasets/source_erp/cust_az12.csv
+- datasets/source_erp/loc_a101.csv
+- datasets/source_erp/px_cat_g1v2.csv
+
+NOTES:
+- All dates in crm_sales_details are stored as INT (e.g., 20250115).
+- Cleaning and transformation will be done in the Silver layer.
+===============================================================================
+*/
+
+
+set @batch_start = now();
+select 'loading bronze layer' as status;
+truncate table crm_cust_info;
+set @start_time = now();
+load data local infile 'C:/Users/Mohamedanis.fegas/Desktop/sql-data-warehouse-project-main/datasets/source_crm/cust_info.csv'
+into table bronze.crm_cust_info
+fields terminated by ','
+ignore 1 rows;
+set @end_time = now();
+select 'crm_cust_info' as table_name, timestampdiff(second, @start_time, @end_time) as duration_seconds;
+
+truncate table bronze.crm_prd_info;
+set @start_time = now();
+load data local infile 'C:/Users/Mohamedanis.fegas/Desktop/sql-data-warehouse-project-main/datasets/source_crm/prd_info.csv'
+into table bronze.crm_prd_info
+fields terminated by ','
+ignore 1 rows;
+set @end_time = now();
+select 'crm_prd_info' as table_name, timestampdiff(second, @start_time, @end_time) as duration_seconds;
+
+truncate table bronze.crm_sales_details;
+set @start_time = now();
+load data local infile 'C:/Users/Mohamedanis.fegas/Desktop/sql-data-warehouse-project-main/datasets/source_crm/sales_details.csv'
+into table bronze.crm_sales_details
+fields terminated by ','
+ignore 1 rows;
+set @end_time = now();
+select 'crm_sales_details' as table_name, timestampdiff(second, @start_time, @end_time) as time_duration;
+
+truncate table bronze.erp_cust_az12;
+set @start_time = now();
+load data local infile 'C:/Users/Mohamedanis.fegas/Desktop/sql-data-warehouse-project-main/datasets/source_erp/CUST_AZ12.csv'
+into table bronze.erp_cust_az12
+fields terminated by ','
+ignore 1 rows;
+set @end_time = now();
+select 'erp_cust_az12' as table_name, timestampdiff(second, @start_time, @end_time) as time_duration;
+
+truncate table bronze.erp_loc_a101;
+set @start_time = now();
+load data local infile 'C:/Users/Mohamedanis.fegas/Desktop/sql-data-warehouse-project-main/datasets/source_erp/LOC_A101.csv'
+into table bronze.erp_loc_a101
+fields terminated by ','
+ignore 1 rows;
+set @end_time = now();
+select 'erp_loc_a101' as table_name, timestampdiff(second, @start_time, @end_time) as time_duration;
+
+truncate table bronze.erp_px_cat_g1v2;
+set @start_time = now();
+load data infile 'C:/Users/Mohamedanis.fegas/Desktop/sql-data-warehouse-project-main/datasets/source_erp/PX_CAT_G1V2.csv'
+into table bronze.erp_px_cat_g1v2
+fields terminated by ','
+ignore 1 rows;
+set @end_time = now();
+select 'erp_px_cat_g1v2' as table_name, timestampdiff(second, @start_time, @end_time) as time_duration;
+
+set @batch_end = now();
+select 'bronze layer completed';
+select timestampdiff(second, @batch_start, @batch_end) as total_duration;
